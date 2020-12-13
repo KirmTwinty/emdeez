@@ -23,32 +23,33 @@ Emdeez intends to control your Deezer player without leaving your Emacs workflow
 To make the authentication and play the tracks from Deezer, [[https://developers.deezer.com/sdk/javascript][Deezer's Javascript SDK]] is used. The =HTML= page containing the =JS= player is then served by an Apache HTML server (=httpd=) through the =simple-httpd.el= library.
 Then, Emacs (and so, you) communicates with the server by websockets. You can see the diagram below to get an overview of the different interactions.
 
-#+BEGIN_SRC plantuml :file img/emdeez-diagram.svg
-!include https://raw.githubusercontent.com/bschwarz/puml-themes/master/themes/sketchy/puml-theme-sketchy.puml
+# #+BEGIN_SRC plantuml :file img/emdeez-diagram.svg
+# !include https://raw.githubusercontent.com/bschwarz/puml-themes/master/themes/sketchy/puml-theme-sketchy.puml
 
-package "Emacs" {
-  [Emdeez UI] -> [Emdeez Websocket]
-}
+# package "Emacs" {
+#   [Emdeez UI] -> [Emdeez Websocket]
+# }
 
-node "Apache HTTP Server (httpd)"{
-  [Emdeez Websocket] <--> Websocket
-  [JS Websocket] <- [Server UI]
-  Websocket <-> [JS Websocket]
-  [Server UI] --> [Deezer JS SDK]
-  [JS Websocket] <--> [Deezer JS SDK]
-}
+# node "Apache HTTP Server (httpd)"{
+#   [Emdeez Websocket] <--> Websocket
+#   [JS Websocket] <- [Server UI]
+#   Websocket <-> [JS Websocket]
+#   [Server UI] --> [Deezer JS SDK]
+#   [JS Websocket] <--> [Deezer JS SDK]
+# }
 
-cloud {
-[Tracks, Playlists, etc.]
-}
+# cloud {
+# [Tracks, Playlists, etc.]
+# }
 
-[Deezer JS SDK] --> [Tracks, Playlists, etc.]
-[You] ..> [Emdeez UI] : use
-[You] ..> [Server UI] : Deezer authentication
-#+END_SRC
+# [Deezer JS SDK] --> [Tracks, Playlists, etc.]
+# [You] ..> [Emdeez UI] : use
+# [You] ..> [Server UI] : Deezer authentication
+# #+END_SRC
 
-#+RESULTS:
-[[file:img/emdeez-diagram.svg]]
+
+#+CAPTION: Emdeez principle
+[[./img/emdeez-diagram.svg]]
 
 *** Features
 - Player UI 
