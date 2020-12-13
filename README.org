@@ -14,6 +14,21 @@ It is *not* an official plugin of Deezer.
 :TOC:      :include siblings :depth 2
 :END:
 
+:CONTENTS:
+- [[#introduction][Introduction]]
+  - [[#how-it-works][How it works]]
+  - [[#features][Features]]
+- [[#installation][Installation]]
+  - [[#requirements][Requirements]]
+  - [[#install-emdeez][Install Emdeez]]
+- [[#usage][Usage]]
+  - [[#player-ui][Player UI]]
+  - [[#search-ui][Search UI]]
+- [[#customizations][Customizations]]
+  - [[#animation][Animation]]
+- [[#todo-list-311][Todo list {3/11}]]
+:END:
+
 ** Introduction
 
 Emdeez intends to control your Deezer player without leaving your Emacs workflow. 
