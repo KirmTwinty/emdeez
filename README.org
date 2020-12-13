@@ -1,0 +1,195 @@
+#+TITLE:     Emdeez
+#+AUTHOR:    Thibaud Toullier
+#+EMAIL:     thibaud.toullier@univ-eiffel.fr
+
+* Emdeez
+
+#+HTML: <a href="https://developers.deezer.com/api"><img src="https://img.shields.io/badge/Deezer-API-blue?style=flat&logo=Deezer"></a> <a href="https://www.gnu.org/licenses/gpl-3.0.html"><img src="https://img.shields.io/github/license/kirmtwinty/emdeez"></a>
+
+Emdeez aims at controlling Deezer within Emacs.
+It is *not* an official plugin of Deezer.
+
+** Contents
+:PROPERTIES:
+:TOC:      :include siblings :depth 2
+:END:
+
+** Introduction
+
+Emdeez intends to control your Deezer player without leaving your Emacs workflow. 
+
+*** How it works
+
+To make the authentication and play the tracks from Deezer, [[https://developers.deezer.com/sdk/javascript][Deezer's Javascript SDK]] is used. The =HTML= page containing the =JS= player is then served by an Apache HTML server (=httpd=) through the =simple-httpd.el= library.
+Then, Emacs (and so, you) communicates with the server by websockets. You can see the diagram below to get an overview of the different interactions.
+
+#+BEGIN_SRC plantuml :file img/emdeez-diagram.svg
+!include https://raw.githubusercontent.com/bschwarz/puml-themes/master/themes/sketchy/puml-theme-sketchy.puml
+
+package "Emacs" {
+  [Emdeez UI] -> [Emdeez Websocket]
+}
+
+node "Apache HTTP Server (httpd)"{
+  [Emdeez Websocket] <--> Websocket
+  [JS Websocket] <- [Server UI]
+  Websocket <-> [JS Websocket]
+  [Server UI] --> [Deezer JS SDK]
+  [JS Websocket] <--> [Deezer JS SDK]
+}
+
+cloud {
+[Tracks, Playlists, etc.]
+}
+
+[Deezer JS SDK] --> [Tracks, Playlists, etc.]
+[You] ..> [Emdeez UI] : use
+[You] ..> [Server UI] : Deezer authentication
+#+END_SRC
+
+#+RESULTS:
+[[file:img/emdeez-diagram.svg]]
+
+*** Features
+- Player UI 
+  - Player view with standard commands (play, pause, seek, etc.)
+  - Current track playing information
+  - Album cover view
+  - Playlist view 
+- Search UI
+  - Perform search on deezer from Emacs and play the results on Emdeez
+- Modeline display
+
+
+** Installation
+*** Requirements
+To use Emdeez, you need to have a *valid premium Deezer* account (and also, well an internet connection...).
+
+Previously the server was running on NodeJS which was a bit overkilled and a lot of files had to be installed. The server has now been changed to =httpd= (Apache HTTP Server). Apart from this external dependency, the rest of the code is written in Elisp.
+
+To install =httpd= on Ubuntu: 
+
+#+BEGIN_SRC: sh
+sudo apt install apache2
+#+END_SRC
+
+For other distributions and OS, see [[http://httpd.apache.org/download.cgi][Apache website]].
+
+Emdeez core is written in Elisp and relies on different elisp packages: 
+- =websocket.el=
+- =uuidgen.el=
+- =simple-httpd.el=
+- =all-the-icons.el=
+
+Other packages (like =eieio.el= and =json.el= should be already shipped with your Emacs).
+
+*** Install Emdeez
+Pick-up the installation method that fits your needs.
+
+**** Manual - Use-package and Quelpa
+
+You can use =use-package= ([[https://github.com/jwiegley/use-package][here]]) and =quelpa-use-package= ([[https://github.com/quelpa/quelpa-use-package][here]]) for installing Emdeez:
+
+#+BEGIN_SRC: elisp
+(use-package emdeez
+  :quelpa ((emdeez :fetcher github :repo "KirmTwinty/emdeez"))
+  :init
+    (use-package websocket)
+    (use-package uuidgen)
+    (use-package simple-httpd)
+    (use-package all-the-icons)
+  :requires (websocket uuidgen simple-httpd all-the-icons)
+  :bind (("C-c m" . emdeez))
+  :after
+    (require 'emdeez-mode-line) ;; optionally for modeline information
+    (add-to-list 'ibuffer-never-show-predicates "^\\*emdeez") ;; optionally hide buffers from iBuffer list
+)
+#+END_SRC
+**** Manual 
+You can also install it entirely by hand:
+
+1. Install the required packages: `websocket' (version 1.12), `uuidgen' (version 1.2), `simple-httpd' (version 1.5.1)
+2. Clone Emdeez repository https://github.com/KirmTwinty/emdeez
+3. Add the downloaded folder to your load path and put this in your init file:
+
+#+BEGIN_SRC: elisp
+;; Add Emdeez folder to your load path
+(add-to-list 'load-path "<emdeez-folder>")
+(require 'emdeez)
+(require 'emdeez-mode-line)            ;; optionaly for modeline information
+(global-set-key (kbd "C-c m") 'emdeez) ;; optionaly to assign a key to Emdeez
+#+END_SRC
+
+
+** Usage
+
+Launch =emdeez= command (=C-c m= in the previous installation steps).
+A web browsing window will open asking to authenticate yourself to Deezer (a popup will appear on the page at [[http://localhost:8000]]).
+Once the authentication is made, re-run =emdeez= command to see the player's UI.
+
+*Note*: the websocket connection between Emacs and the server can have some various delay. As long as "Waiting for the socket to be opened" message is displayed on the HTML page, the player won't open. Everything is setup once the message "You can now control the player within Emacs!" is displayed on the HTML page.
+
+*** Player UI
+
+#+CAPTION: Screenshot of the player ui
+[[./img/emdeez-ui.png]]
+
+The player UI is divided into 3 different frames: 
+- Controls (top left)
+- Album cover (top right)
+- Playlist (bottom)
+
+_List of shortcuts by default:_
+
+| Shortcut | Action                       | Function                      |
+|----------+------------------------------+-------------------------------|
+| =f=      | Load flow                    | =emdeez-player-flow=          |
+| =n=      | Next                         | =emdeez-player-next=          |
+| =SPC=    | Play / Pause                 | =emdeez-player-play-pause=    |
+| =p=      | Previous                     | =emdeez-player-previous=      |
+| =g=      | Refresh player               | =emdeez-refresh=              |
+| =s=      | Search                       | =emdeez-ui-search-make-frame= |
+| =o=      | Go to playlist window        | =emdeez-ui-goto-playlist=     |
+| =RET=    | Go to time (on progress bar) | =emdeez-ui-seek=              |
+| =C-q=    | Quit                         | =emdeez-ui-quit=              |
+
+
+*** Search UI
+#+CAPTION: Screenshot of the search ui. Keywords can be used (or not) for advanced search such as =artist= or =album= for instance.
+[[./img/emdeez-search-ui.png]]
+
+_Note:_ Please note that this buffer can be edited contrary to the player UI. 
+It should be changed in the future by considering two separate frames.
+
+** Customizations
+*** Animation
+An animation is made by default for the smooth appearing of the new windows.
+This setting can be deactivated by [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Customization.html#Customization][customizing]] the variable =emdeez-ui-animate= to =nil=.
+Another parameter is the final transparency of the window with =emdeez-ui-alpha= (0-100) value.
+
+** TODO Todo list [3/11]
+- [-] Put it on MELPA on next release
+- [-] Work on OSs compatibility (only tested on Ubuntu) => simple-httpd on Windows?
+- [-] Modify the search window to be non-editable (like the playlist one)
+- [-] Work on packages compatibility (w, w/ all-the-icons etc.)
+- [-] Cleaning
+  - [X] Clean keybindings and custom variables
+  - [-] Make clean documentation
+  - [X] Add required comments
+- [X] Play a track on the playlist by selecting it
+- [-] Autoplay on server
+- [-] Show various informations
+  - [X] Play / Pause fix
+  - [-] Volume 
+  - [-] Random 
+  - [-] Shuffle
+  - [-] Explicit content
+  - [-] Lyrics (fetch from online database)
+- [X] Improve server display
+- [-] Search improvements
+  - [-] Add specific search (artist, album, episode, etc.)
+  - [-] Add custom search: perform search by artist and album and etc. adn then select the best result 
+- [X] Mode-line display
+- [-] Flow improvements 
+  - [-] "Do not recommend again" (possible?)
+- [-] Extend to other providers (Spotify, /etc./)

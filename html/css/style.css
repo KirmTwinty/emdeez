@@ -1,0 +1,21 @@
+body{
+    background-color: #121216;
+    color:white;
+    font-family: Arial, sans-serif;
+}
+h1{
+    color: white;
+    font-family: Arial, sans-serif;
+    font-size: 40px;
+    font-weight: 700;
+}
+.container{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    flex-direction:column;
+}
+#player{
+    margin-top:50px;
+}
