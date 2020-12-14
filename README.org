@@ -136,6 +136,7 @@ Other packages (like =eieio.el= and =json.el= should be already shipped with you
 (setq emdeez-path "<emdeez-folder>")
 (require 'emdeez-mode-line)            ;; optionaly for modeline information
 (global-set-key (kbd "C-c m") 'emdeez) ;; optionaly to assign a key to Emdeez
+(add-to-list 'ibuffer-never-show-predicates "^\\*emdeez") ;; optionally hide buffers from iBuffer list
 #+END_SRC
 
 
