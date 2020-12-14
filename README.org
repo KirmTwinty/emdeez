@@ -116,6 +116,8 @@ You can use =use-package= ([[https://github.com/jwiegley/use-package][here]]) an
     (use-package all-the-icons)
   :requires (websocket uuidgen simple-httpd all-the-icons)
   :bind (("C-c m" . emdeez))
+  :config
+    (setq emdeez-path "<emdeez-folder>") ;; Location where emdeez is installed
   :after
     (require 'emdeez-mode-line) ;; optionally for modeline information
     (add-to-list 'ibuffer-never-show-predicates "^\\*emdeez") ;; optionally hide buffers from iBuffer list
@@ -132,6 +134,7 @@ You can also install it entirely by hand:
 ;; Add Emdeez folder to your load path
 (add-to-list 'load-path "<emdeez-folder>")
 (require 'emdeez)
+(setq emdeez-path "<emdeez-folder>")
 (require 'emdeez-mode-line)            ;; optionaly for modeline information
 (global-set-key (kbd "C-c m") 'emdeez) ;; optionaly to assign a key to Emdeez
 #+END_SRC
