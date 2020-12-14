@@ -100,31 +100,30 @@ Emdeez core is written in Elisp and relies on different elisp packages:
 Other packages (like =eieio.el= and =json.el= should be already shipped with your Emacs).
 
 ** Install Emdeez
-Pick-up the installation method that fits your needs.
+# Pick-up the installation method that fits your needs.
 
-*** Manual - Use-package and Quelpa
+# *** Manual - Use-package and Quelpa
 
-You can use =use-package= ([[https://github.com/jwiegley/use-package][here]]) and =quelpa-use-package= ([[https://github.com/quelpa/quelpa-use-package][here]]) for installing Emdeez:
+# You can use =use-package= ([[https://github.com/jwiegley/use-package][here]]) and =quelpa-use-package= ([[https://github.com/quelpa/quelpa-use-package][here]]) for installing Emdeez:
 
-#+BEGIN_SRC: elisp
-(use-package emdeez
-  :quelpa ((emdeez :fetcher github :repo "KirmTwinty/emdeez"))
-  :init
-    (use-package websocket)
-    (use-package uuidgen)
-    (use-package simple-httpd)
-    (use-package all-the-icons)
-  :requires (websocket uuidgen simple-httpd all-the-icons)
-  :bind (("C-c m" . emdeez))
-  :config
-    (setq emdeez-path "<emdeez-folder>") ;; Location where emdeez is installed
-  :after
-    (require 'emdeez-mode-line) ;; optionally for modeline information
-    (add-to-list 'ibuffer-never-show-predicates "^\\*emdeez") ;; optionally hide buffers from iBuffer list
-)
-#+END_SRC
+# #+BEGIN_SRC: elisp
+# (use-package emdeez
+#   :quelpa ((emdeez :fetcher github :repo "KirmTwinty/emdeez"))
+#   :init
+#     (use-package websocket)
+#     (use-package uuidgen)
+#     (use-package simple-httpd)
+#     (use-package all-the-icons)
+#   :requires (websocket uuidgen simple-httpd all-the-icons)
+#   :bind (("C-c m" . emdeez))
+#   :config
+#     (setq emdeez-path "<emdeez-folder>") ;; Location where emdeez is installed
+#   :after
+#     (require 'emdeez-mode-line) ;; optionally for modeline information
+#     (add-to-list 'ibuffer-never-show-predicates "^\\*emdeez") ;; optionally hide buffers from iBuffer list
+# )
+# #+END_SRC
 *** Manual 
-You can also install it entirely by hand:
 
 1. Install the required packages: `websocket' (version 1.12), `uuidgen' (version 1.2), `simple-httpd' (version 1.5.1)
 2. Clone Emdeez repository https://github.com/KirmTwinty/emdeez
