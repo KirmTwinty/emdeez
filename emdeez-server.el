@@ -186,7 +186,6 @@ Please note that all data are `json-encode' before being sent."
   (goto-char url-http-end-of-headers)
   (let ((val (cdr (json-read))))
     (oset emdeez-server user val)
-    (message val)
     )
   )
 

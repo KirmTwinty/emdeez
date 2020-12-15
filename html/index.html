@@ -21,7 +21,7 @@
 		     container: 'player',
 		     width : 800,
 		     height : 300,
-		     nonload : function(){}
+		     onload : function(){}
 		 }
 	     });
 	     // Store the player position to find it back
@@ -36,19 +36,128 @@
 		     DZ.api('/user/me', function(response) {
 			 document.getElementById("title").innerHTML = 'Welcome back, ' +response.name+'.';
 			 document.getElementById("info").innerHTML = 'Waiting for the socket to be opened.';
+			 socket = new WebSocket("ws://127.0.0.1:8080");
+			 socket.onopen = function (event) {
+			     console.log("Socket opened.");		 
+			     document.getElementById("info").innerHTML = 'You can now control the player within Emacs!';
+			 };
+			 
+			 socket.onmessage = function(event){
+			     var data = JSON.parse(event.data);
+			     console.log(`Command received ${data.command} and value ${data.value}`);
+			     if(data.command == 'identification'){
+				 my_uiid = data.value;
+				 console.log("Got uuid: " + my_uiid);
+
+				 var pong = {
+				     command: "identification",
+				     value: {
+					 user: DZ.user["id"],
+					 token: DZ.token
+				     }
+				 };
+				 socket.send(JSON.stringify(pong)); // Identify ourself as the htmlClient
+				 // Also call a timeout to observe changes of the token
+				 setTimeout(check_token, DZ.tokenExpire*1000+500);
+			     }else{
+				 var ids = JSON.parse(data.value);
+				 switch(data.command){
+				     case 'item':
+					 var trackIds = [];
+					 var tracklist = DZ.player.getTrackList();
+					 tracklist.forEach(el => trackIds.push(parseInt(el.id)));
+					 DZ.player.playTracks(trackIds, ids);
+					 break;
+				     case 'refresh':
+					 // We send the player info to Emacs
+					 var playerState = {
+					     playing: DZ.player.isPlaying(),
+					     trackList : DZ.player.getTrackList(),
+					     currentTrack : DZ.player.getCurrentTrack(),
+					     currentIndex : DZ.player.getCurrentIndex(),
+					     volume : DZ.player.getVolume(),
+					     shuffle : DZ.player.getShuffle(),
+					     repeat : DZ.player.getRepeat(),
+					     mute : DZ.player.getMute(),
+					     position: playerPosition
+					 };
+					 var pong = {
+					     command: "refresh",
+					     value: playerState
+					 }
+					 socket.send(JSON.stringify(pong));
+					 break;
+					 // Control the player
+				     case 'play':
+					 DZ.player.play();
+					 break;
+				     case 'pause':
+					 DZ.player.pause();
+					 break;
+				     case 'next':
+					 DZ.player.next();
+					 break;
+				     case 'prev':
+					 DZ.player.prev();
+					 break;
+				     case 'seek':
+					 DZ.player.seek(JSON.parse(data.value));
+					 break;
+				     case 'volume':
+					 DZ.player.setVolume();
+					 break;
+				     case 'mute':
+					 DZ.player.setMute();
+					 break;
+				     case 'shuffle':
+					 DZ.player.setShuffle();
+					 break;
+				     case 'repeat':
+					 DZ.player.setRepeat();
+					 break;
+				     case 'trackorder':
+					 DZ.player.changeTrackOrder();
+					 break;
+				     case 'blind-test-mode':
+					 DZ.player.setBlindTestMode();
+					 break;
+					 // Load tracks and data to the player
+				     case 'tracks': // Plays th given tracks id in the data.value string array
+					 DZ.player.playTracks(ids);
+					 break;
+				     case 'album': // Play the given album id
+					 DZ.player.playAlbum(ids);
+					 break;
+				     case 'podcast': // Play the given album id
+					 DZ.player.playPodcast(ids);
+					 break;
+				     case 'episode': // Play the given album id
+					 DZ.player.playEpisodes(ids);
+					 break;
+				     case 'radio': // Play the given album id
+					 DZ.player.playRadio(ids);
+					 break;
+				     case 'mp3': // Play the given album id
+					 DZ.player.playExternalTracks(ids); 
+					 break;
+				     case 'queue':
+					 DZ.player.addToQueue(ids);
+					 break;
+				 };    
+			     }
+			     
+
+			 };
 		     });
+
 		     
+
 		 } else {
 		     console.log('User cancelled login or did not fully authorize.');
 		 }
 	     }, {perms: 'basic_access,email'});
 
 
-	     socket = new WebSocket("ws://127.0.0.1:8080");
-	     socket.onopen = function (event) {
-		 console.log("Socket opened.");		 
-		 document.getElementById("info").innerHTML = 'You can now control the player within Emacs!';
-	     };
 
 	     var oldToken = DZ.token;
 	     var checkTokenTrials = 0;
@@ -77,121 +186,16 @@
 		     }
 		 }
 	     };	     
-	     socket.onmessage = function(event){
-		 var data = JSON.parse(event.data);
-		 console.log(`Command received ${data.command} and value ${data.value}`);
-		 if(data.command == 'identification'){
-		     my_uiid = data.value;
-		     console.log("Got uuid: " + my_uiid);
-
-		     var pong = {
-			 command: "identification",
-			 value: {
-			     user: DZ.user["id"],
-			     token: DZ.token
-			 }
-		     };
-		     socket.send(JSON.stringify(pong)); // Identify ourself as the htmlClient
-		     // Also call a timeout to observe changes of the token
-		     setTimeout(check_token, DZ.tokenExpire*1000+500);
-		 }else{
-		     var ids = JSON.parse(data.value);
-		     switch(data.command){
-			 case 'item':
-			     var trackIds = [];
-			     var tracklist = DZ.player.getTrackList();
-			     tracklist.forEach(el => trackIds.push(parseInt(el.id)));
-			     DZ.player.playTracks(trackIds, ids);
-			     break;
-			 case 'refresh':
-			     // We send the player info to Emacs
-			     var playerState = {
-				 playing: DZ.player.isPlaying(),
-				 trackList : DZ.player.getTrackList(),
-				 currentTrack : DZ.player.getCurrentTrack(),
-				 currentIndex : DZ.player.getCurrentIndex(),
-				 volume : DZ.player.getVolume(),
-				 shuffle : DZ.player.getShuffle(),
-				 repeat : DZ.player.getRepeat(),
-				 mute : DZ.player.getMute(),
-				 position: playerPosition
-			     };
-			     var pong = {
-				 command: "refresh",
-				 value: playerState
-			     }
-			     socket.send(JSON.stringify(pong));
-			     break;
-			     // Control the player
-			 case 'play':
-			     DZ.player.play();
-			     break;
-			 case 'pause':
-			     DZ.player.pause();
-			     break;
-			 case 'next':
-			     DZ.player.next();
-			     break;
-			 case 'prev':
-			     DZ.player.prev();
-			     break;
-			 case 'seek':
-			     DZ.player.seek(JSON.parse(data.value));
-			     break;
-			 case 'volume':
-			     DZ.player.setVolume();
-			     break;
-			 case 'mute':
-			     DZ.player.setMute();
-			     break;
-			 case 'shuffle':
-			     DZ.player.setShuffle();
-			     break;
-			 case 'repeat':
-			     DZ.player.setRepeat();
-			     break;
-			 case 'trackorder':
-			     DZ.player.changeTrackOrder();
-			     break;
-			 case 'blind-test-mode':
-			     DZ.player.setBlindTestMode();
-			     break;
-			     // Load tracks and data to the player
-			 case 'tracks': // Plays th given tracks id in the data.value string array
-			     DZ.player.playTracks(ids);
-			     break;
-			 case 'album': // Play the given album id
-			     DZ.player.playAlbum(ids);
-			     break;
-			 case 'podcast': // Play the given album id
-			     DZ.player.playPodcast(ids);
-			     break;
-			 case 'episode': // Play the given album id
-			     DZ.player.playEpisodes(ids);
-			     break;
-			 case 'radio': // Play the given album id
-			     DZ.player.playRadio(ids);
-			     break;
-			 case 'mp3': // Play the given album id
-			     DZ.player.playExternalTracks(ids); 
-			     break;
-			 case 'queue':
-			     DZ.player.addToQueue(ids);
-			     break;
-		     };    
-		 }
-		 
-
-	     };
+	     
 
 
 	 };
 	 // Deferred loading
 	 (function() {
-	     var e = document.createElement('script');
-	     e.src = 'https://cdns-files.dzcdn.net/js/min/dz.js';
-	     e.async = true;
-	     document.getElementById('dz-root').appendChild(e);
+	     var scriptDZ = document.createElement('script');
+	     scriptDZ.src = 'https://cdns-files.dzcdn.net/js/min/dz.js';
+	     scriptDZ.async = true;
+	     document.getElementById('dz-root').appendChild(scriptDZ);
 	 }());
 	</script>
 
