@@ -186,6 +186,11 @@ An animation is made by default for the smooth appearing of the new windows.
 This setting can be deactivated by [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Customization.html#Customization][customizing]] the variable =emdeez-ui-animate= to =nil=.
 Another parameter is the final transparency of the window with =emdeez-ui-alpha= (0-100) value.
 
+
+* Known issue
+Sometimes, the player isn't properly loaded so you can load tracks onto the player but actually cannot play them.
+This is a known issue #1 and I am trying to reach Deezer devs to get more info. 
+
 * TODO Todo list [3/11]
 - [-] Put it on MELPA on next release
 - [-] Work on OSs compatibility (only tested on Ubuntu) => simple-httpd on Windows?
