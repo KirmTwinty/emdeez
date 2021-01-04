@@ -237,8 +237,8 @@ Please note that all data are `json-encode' before being sent."
     (httpd-discard-buffer)
     (with-temp-buffer
       (set-buffer-multibyte nil)
-      (insert-file-contents "/home/ttoullie/Documents/Misc/git/emdeez-git/html/channel.html")
-      (httpd-send-header proc (httpd-get-mime (file-name-extension "/home/ttoullie/Documents/Misc/git/emdeez-git/html/channel.html")) 200
+      (insert-file-contents (emdeez-utils--path-join emdeez-path "html" "channel.html"))
+      (httpd-send-header proc (httpd-get-mime (file-name-extension (emdeez-utils--path-join emdeez-path "html" "channel.html"))) 200
 			 :Pragma "public"
 			 :Cache-Control "maxage=31536000"
 			 :Expires "Tue, 16 Nov 2021 07:28:00 GMT")))
