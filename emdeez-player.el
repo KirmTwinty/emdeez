@@ -37,7 +37,8 @@
 
 (defvar emdeez-player-current-track
   '((number . 0)
-   (time-started . 0))
+   (time-started . 0)
+   (time-paused . 0))
   "Current track # of playlist and when it was started.")
 
 ;;;; Functions
@@ -69,9 +70,11 @@
       (if (eq emdeez-player-status 0)
 	  (progn
 	    (setq command-to-send "$play:null")
-	    (setq emdeez-player-status 1))
+	    (setq emdeez-player-status 1)
+	    (setf (alist-get 'time-started emdeez-player-current-track) (float-time (time-subtract (float-time) (alist-get 'time-paused emdeez-player-current-track)))))
 	(setq command-to-send "$pause:null")
-	(setq emdeez-player-status 0)))
+	(setq emdeez-player-status 0)
+	(setf (alist-get 'time-paused emdeez-player-current-track) (float-time (time-subtract (float-time) (alist-get 'time-started emdeez-player-current-track))))))
     (emdeez-server-query emdeez-server command-to-send nil)))
 
 ;;;###autoload

@@ -184,7 +184,10 @@ If `emdeez-ui-animate' is set to t, the appears smoothly."
 	(insert (all-the-icons-faicon "step-forward" :height 2.2 ))
 	(insert (make-string 23 ? ))	
 	(newline)
-	(let ((currentTime (float-time (time-subtract (float-time) (alist-get 'time-started emdeez-player-current-track))))
+	(let ((currentTime 
+	       (if (= emdeez-player-status 0)
+		   (alist-get 'time-paused emdeez-player-current-track)
+		 (float-time (time-subtract (float-time) (alist-get 'time-started emdeez-player-current-track)))))
 	      (duration (alist-get 'duration currentTrack)))
 	  (if (<= currentTime duration)
 	      (emdeez-ui-progress-update currentTime 0 duration)

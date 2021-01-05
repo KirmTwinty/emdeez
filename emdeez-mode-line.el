@@ -66,7 +66,10 @@ See also: `emdeez-mode-line-refresh'")
 	(alist-get 'title currentTrack)
 	'face 'mode-line)
        " "
-       (let ((currentTime (float-time (time-subtract (float-time) (alist-get 'time-started emdeez-player-current-track))))
+       (let ((currentTime 
+	      (if (= emdeez-player-status 0)
+		  (alist-get 'time-paused emdeez-player-current-track)
+		(float-time (time-subtract (float-time) (alist-get 'time-started emdeez-player-current-track)))))
 	     (duration (alist-get 'duration currentTrack)))
 	 (if (<= currentTime duration)
 	     (propertize
